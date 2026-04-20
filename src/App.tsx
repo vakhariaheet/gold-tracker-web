@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { GoldRateProvider } from './context/GoldRateContext';
 import { PurchasesProvider } from './context/PurchasesContext';
 import Layout from './components/Layout';
+import SessionExpiredModal from './components/SessionExpiredModal';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import OTPVerificationPage from './pages/OTPVerificationPage';
@@ -62,6 +63,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppRoutes />
+        <SessionExpiredModal />
       </AuthProvider>
     </BrowserRouter>
   );

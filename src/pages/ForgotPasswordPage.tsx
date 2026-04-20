@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function ForgotPasswordPage() {
@@ -25,56 +25,54 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-background flex items-center justify-center p-5">
+      <div className="w-full max-w-sm">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+          className="flex items-center gap-2 text-muted hover:text-warm mb-8 transition-colors text-sm"
         >
-          <ArrowLeft size={18} />
-          Back to Login
+          <ArrowLeft size={15} strokeWidth={1.75} />
+          Back to sign in
         </button>
 
-        <div className="glass rounded-2xl p-6">
-          <div className="w-12 h-12 gold-gradient rounded-xl flex items-center justify-center mb-4">
-            <Mail size={20} className="text-black" />
+        <div className="mb-8">
+          <div className="w-10 h-10 bg-gold/10 border border-gold/25 flex items-center justify-center mb-5">
+            <span className="font-display text-gold text-lg font-medium">?</span>
           </div>
-          <h2 className="text-xl font-bold text-white mb-1">Forgot Password</h2>
-          <p className="text-gray-400 text-sm mb-6">
-            Enter your email to receive a one-time password.
+          <h1 className="font-display text-3xl font-medium text-warm mb-1">Forgot Password</h1>
+          <p className="text-muted text-sm">
+            Enter your email and we'll send you a one-time code.
           </p>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="text-sm text-gray-400 mb-1 block">Email Address</label>
-              <div className="relative">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full bg-surface-light border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-gold/50 transition-colors"
-                  required
-                />
-              </div>
-            </div>
-
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full gold-gradient text-black font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {isLoading ? 'Sending OTP...' : 'Send OTP'}
-            </button>
-          </form>
         </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs text-muted block mb-1.5 uppercase tracking-wider">Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="vault-input"
+              required
+              autoFocus
+            />
+          </div>
+
+          {error && (
+            <div className="bg-crimson-bg border border-crimson/20 rounded-lg px-4 py-3 text-crimson-light text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="btn-gold w-full py-3 rounded-lg text-sm"
+          >
+            {isLoading ? 'Sending…' : 'Send Code'}
+          </button>
+        </form>
       </div>
     </div>
   );

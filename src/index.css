@@ -1,18 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@300;400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-body {
-  background-color: #0A0E21;
-  color: #ffffff;
-  font-family: 'Inter', system-ui, sans-serif;
+html {
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #0A0908;
+  color: #EDE8DF;
+  font-family: 'DM Sans', system-ui, sans-serif;
   min-height: 100vh;
 }
 
@@ -20,43 +26,193 @@ body {
   min-height: 100vh;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #1D1E33;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #FFB300;
-  border-radius: 3px;
-}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #111110; }
+::-webkit-scrollbar-thumb { background: #C29C44; border-radius: 2px; }
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px #1D1E33 inset;
-  -webkit-text-fill-color: #ffffff;
-  caret-color: #ffffff;
+  -webkit-box-shadow: 0 0 0px 1000px #181715 inset;
+  -webkit-text-fill-color: #EDE8DF;
+  caret-color: #EDE8DF;
 }
 
+/* Card surface */
+.vault-card {
+  background: #111110;
+  border: 1px solid rgba(194, 156, 68, 0.1);
+  border-radius: 10px;
+}
+
+/* Gold CTA button */
+.btn-gold {
+  background: linear-gradient(135deg, #C29C44 0%, #A8833A 100%);
+  color: #0A0908;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.02em;
+  transition: opacity 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-gold:hover:not(:disabled) { opacity: 0.85; }
+.btn-gold:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Ghost button */
+.btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(194, 156, 68, 0.15);
+  color: #7A6E62;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-ghost:hover { border-color: rgba(194, 156, 68, 0.35); color: #EDE8DF; }
+
+/* Input */
+.vault-input {
+  background: #181715;
+  border: 1px solid rgba(194, 156, 68, 0.1);
+  border-radius: 8px;
+  color: #EDE8DF;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  transition: border-color 0.15s ease;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9375rem;
+}
+.vault-input:focus {
+  outline: none;
+  border-color: rgba(194, 156, 68, 0.45);
+}
+.vault-input::placeholder {
+  color: #3D3830;
+}
+.vault-input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.4) sepia(1) saturate(0.5) hue-rotate(0deg);
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+/* Section label */
+.section-label {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7A6E62;
+}
+
+/* Stat divider */
+.stat-divider {
+  border-top: 1px solid rgba(194, 156, 68, 0.08);
+}
+
+/* Profit / Loss surfaces */
+.profit-surface {
+  background: rgba(75, 138, 101, 0.07);
+  border: 1px solid rgba(75, 138, 101, 0.18);
+}
+.loss-surface {
+  background: rgba(160, 80, 80, 0.07);
+  border: 1px solid rgba(160, 80, 80, 0.18);
+}
+
+/* Legacy compat */
 .glass {
-  background: rgba(29, 30, 51, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 179, 0, 0.15);
+  background: #111110;
+  border: 1px solid rgba(194, 156, 68, 0.1);
 }
-
 .gold-gradient {
-  background: linear-gradient(135deg, #FFB300 0%, #FF8F00 100%);
+  background: linear-gradient(135deg, #C29C44 0%, #A8833A 100%);
 }
-
 .profit-gradient {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(75, 138, 101, 0.08);
+  border: 1px solid rgba(75, 138, 101, 0.2);
+}
+.loss-gradient {
+  background: rgba(160, 80, 80, 0.08);
+  border: 1px solid rgba(160, 80, 80, 0.2);
 }
 
-.loss-gradient {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+/* Nav active indicator */
+.nav-active {
+  color: #C29C44;
+  background: rgba(194, 156, 68, 0.08);
+}
+
+/* Fade in animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.fade-up-1 { animation-delay: 0.05s; opacity: 0; }
+.fade-up-2 { animation-delay: 0.14s; opacity: 0; }
+.fade-up-3 { animation-delay: 0.23s; opacity: 0; }
+.fade-up-4 { animation-delay: 0.32s; opacity: 0; }
+.fade-up-5 { animation-delay: 0.40s; opacity: 0; }
+
+/* Card hover lift */
+.vault-card {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.vault-card:hover {
+  border-color: rgba(194, 156, 68, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 0.5px rgba(194, 156, 68, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Gold shimmer on rate card */
+@keyframes goldShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.gold-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #C29C44 0%,
+    #E8D5A3 40%,
+    #C29C44 60%,
+    #A8833A 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: goldShimmer 3s linear infinite;
+}
+
+/* Subtle glow pulse for live data */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(194, 156, 68, 0); }
+  50%       { box-shadow: 0 0 12px 2px rgba(194, 156, 68, 0.08); }
+}
+.glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+/* Slide-in for number counts */
+@keyframes numberReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.number-reveal {
+  animation: numberReveal 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Session expired modal */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
@@ -32,82 +32,118 @@ export default function LoginPage() {
 
   const displayError = localError || error;
 
+  const switchMode = () => {
+    setIsRegister(!isRegister);
+    setLocalError('');
+    clearError();
+  };
+
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 gold-gradient rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-gold/30">
-            <span className="text-black font-bold text-2xl">GT</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white">Gold Tracker</h1>
-          <p className="text-gray-400 text-sm mt-1">Track your gold investments</p>
+    <div className="min-h-screen bg-background flex">
+      {/* Left panel — decorative, desktop only */}
+      <div className="hidden lg:flex flex-col justify-between w-[420px] shrink-0 border-r border-gold/[0.08] p-10 relative overflow-hidden">
+        {/* Decorative large K */}
+        <div className="absolute -bottom-10 -left-8 font-display text-[240px] font-light text-gold/[0.04] leading-none select-none pointer-events-none">
+          K
         </div>
 
-        {/* Card */}
-        <div className="glass rounded-2xl p-6 shadow-xl">
-          <h2 className="text-lg font-semibold text-white mb-6">
-            {isRegister ? 'Create Account' : 'Welcome Back'}
+        {/* Brand */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 border border-gold/40 bg-gold/8 flex items-center justify-center">
+            <span className="font-display text-gold font-semibold text-base leading-none">K</span>
+          </div>
+          <span className="font-display text-gold text-lg font-medium tracking-wide">Karat</span>
+        </div>
+
+        {/* Tagline */}
+        <div>
+          <h2 className="font-display text-4xl font-light text-warm leading-tight mb-4">
+            Your precious<br />
+            investments,<br />
+            <em>precisely tracked.</em>
           </h2>
+          <p className="text-muted text-sm leading-relaxed max-w-xs">
+            Monitor your gold portfolio with real-time market rates, P&L tracking, and full purchase history — all in one place.
+          </p>
+        </div>
+
+        {/* Bottom note */}
+        <p className="text-faint text-xs">24K · 22K · 18K purity support</p>
+      </div>
+
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center p-5 sm:p-8">
+        <div className="w-full max-w-sm">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+            <div className="w-8 h-8 border border-gold/40 bg-gold/8 flex items-center justify-center">
+              <span className="font-display text-gold font-semibold text-base leading-none">K</span>
+            </div>
+            <span className="font-display text-gold text-lg font-medium tracking-wide">Karat</span>
+          </div>
+
+          <div className="mb-8">
+            <h1 className="font-display text-3xl font-medium text-warm mb-1">
+              {isRegister ? 'Create account' : 'Welcome back'}
+            </h1>
+            <p className="text-muted text-sm">
+              {isRegister ? 'Start tracking your gold portfolio' : 'Sign in to your portfolio'}
+            </p>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {isRegister && (
               <div>
-                <label className="text-sm text-gray-400 mb-1 block">Full Name</label>
-                <div className="relative">
-                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    placeholder="John Doe"
-                    className="w-full bg-surface-light border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-gold/50 transition-colors"
-                    required
-                  />
-                </div>
+                <label className="text-xs text-muted block mb-1.5 uppercase tracking-wider">Full Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="Arjun Kumar"
+                  className="vault-input"
+                  required
+                  autoFocus
+                />
               </div>
             )}
 
             <div>
-              <label className="text-sm text-gray-400 mb-1 block">Email</label>
-              <div className="relative">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full bg-surface-light border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-gold/50 transition-colors"
-                  required
-                />
-              </div>
+              <label className="text-xs text-muted block mb-1.5 uppercase tracking-wider">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="vault-input"
+                required
+                autoFocus={!isRegister}
+              />
             </div>
 
             <div>
-              <label className="text-sm text-gray-400 mb-1 block">Password</label>
+              <label className="text-xs text-muted block mb-1.5 uppercase tracking-wider">Password</label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-surface-light border border-white/10 rounded-xl pl-10 pr-10 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-gold/50 transition-colors"
+                  className="vault-input pr-11"
                   required
                   minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-faint hover:text-muted transition-colors"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
             </div>
 
             {displayError && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">
+              <div className="bg-crimson-bg border border-crimson/20 rounded-lg px-4 py-3 text-crimson-light text-sm">
                 {displayError}
               </div>
             )}
@@ -115,28 +151,27 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full gold-gradient text-black font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="btn-gold w-full py-3 rounded-lg text-sm mt-2"
             >
-              {isLoading ? 'Please wait...' : isRegister ? 'Create Account' : 'Login'}
+              {isLoading ? 'Please wait…' : isRegister ? 'Create Account' : 'Sign In'}
             </button>
           </form>
 
           {!isRegister && (
-            <Link
-              to="/forgot-password"
-              className="block text-center text-sm text-gold/80 hover:text-gold mt-4 transition-colors"
-            >
-              Forgot Password?
-            </Link>
+            <div className="mt-4 text-center">
+              <Link
+                to="/forgot-password"
+                className="text-xs text-muted hover:text-gold transition-colors"
+              >
+                Forgot your password?
+              </Link>
+            </div>
           )}
 
-          <div className="mt-6 pt-4 border-t border-white/5 text-center">
-            <button
-              onClick={() => { setIsRegister(!isRegister); setLocalError(''); clearError(); }}
-              className="text-sm text-gray-400 hover:text-white transition-colors"
-            >
+          <div className="mt-7 pt-5 border-t border-gold/[0.08] text-center">
+            <button onClick={switchMode} className="text-sm text-muted hover:text-warm transition-colors">
               {isRegister ? 'Already have an account? ' : "Don't have an account? "}
-              <span className="text-gold">{isRegister ? 'Login' : 'Sign up'}</span>
+              <span className="text-gold">{isRegister ? 'Sign in' : 'Sign up'}</span>
             </button>
           </div>
         </div>

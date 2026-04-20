@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import { TrendingUp, TrendingDown, RefreshCw, Plus, Scale, Coins } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw, Plus } from 'lucide-react';
 import { useGoldRate } from '../context/GoldRateContext';
 import { usePurchases } from '../context/PurchasesContext';
 
@@ -12,6 +13,27 @@ function fmt(n: number, digits = 0) {
 
 function fmtCurrency(n: number) {
   return '₹' + fmt(n, 0);
+}
+
+function useCountUp(target: number, duration = 900) {
+  const [value, setValue] = useState(0);
+  const prevTarget = useRef(0);
+
+  useEffect(() => {
+    if (target === 0) { setValue(0); return; }
+    const start = Date.now();
+    const from = prevTarget.current;
+    prevTarget.current = target;
+    const step = () => {
+      const progress = Math.min((Date.now() - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(from + (target - from) * eased));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration]);
+
+  return value;
 }
 
 export default function DashboardPage() {
@@ -24,137 +46,160 @@ export default function DashboardPage() {
   const isProfit = stats.profitLoss >= 0;
   const hasPurchases = purchases.length > 0;
 
+  const animCurrentValue = useCountUp(stats.currentValue);
+  const animInvestment = useCountUp(stats.totalInvestment);
+  const animProfitLoss = useCountUp(Math.abs(stats.profitLoss));
+  const animRatePerGram = useCountUp(ratePerGram, 700);
+
   const chartData = history.map(h => ({
     date: new Date(h.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
     price: Math.round(h.price / 10),
   }));
 
   return (
-    <div className="sm:pl-52 space-y-4">
-      <h1 className="text-xl font-bold text-white">Dashboard</h1>
+    <div className="space-y-5">
 
-      {/* Portfolio Summary */}
-      <div className={`rounded-2xl p-5 ${hasPurchases ? (isProfit ? 'profit-gradient' : 'loss-gradient') : 'glass'}`}>
-        <p className="text-sm text-gray-400 mb-1">Portfolio Summary</p>
-        {hasPurchases ? (
-          <>
-            <div className="grid grid-cols-2 gap-4 mt-3">
-              <div>
-                <p className="text-xs text-gray-400">Total Invested</p>
-                <p className="text-lg font-bold text-white">{fmtCurrency(stats.totalInvestment)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400">Current Value</p>
-                <p className="text-lg font-bold text-white">{fmtCurrency(stats.currentValue)}</p>
-              </div>
-            </div>
-            <div className={`mt-3 flex items-center gap-2 ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
-              {isProfit ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-              <span className="font-semibold">
-                {isProfit ? '+' : ''}{fmtCurrency(stats.profitLoss)}
-                {' '}({isProfit ? '+' : ''}{stats.profitLossPercentage.toFixed(2)}%)
-              </span>
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-4">
-            <p className="text-gray-400 text-sm mb-3">No investments yet. Start tracking!</p>
-            <button
-              onClick={() => navigate('/add')}
-              className="gold-gradient text-black font-semibold px-4 py-2 rounded-xl text-sm flex items-center gap-2 mx-auto hover:opacity-90 transition-opacity"
-            >
-              <Plus size={16} />
-              Add Purchase
-            </button>
-          </div>
-        )}
-      </div>
+      {/* Portfolio */}
+      <section className="fade-up fade-up-1">
+        <p className="section-label mb-3">Portfolio</p>
+        <div className="vault-card p-5">
+          {hasPurchases ? (
+            <>
+              <p className="text-xs text-muted mb-1.5">Current Value</p>
+              <p className="font-display text-5xl font-light text-warm leading-none mb-2 number-reveal">
+                {fmtCurrency(animCurrentValue)}
+              </p>
 
-      {/* Gold Rate Card */}
-      <div className="glass rounded-2xl p-5">
+              <div className={`flex items-center gap-1.5 mb-5 ${isProfit ? 'text-emerge' : 'text-crimson'}`}>
+                {isProfit ? <TrendingUp size={13} strokeWidth={2} /> : <TrendingDown size={13} strokeWidth={2} />}
+                <span className="font-mono text-sm">
+                  {isProfit ? '+' : '-'}{fmtCurrency(animProfitLoss)}
+                  <span className="text-muted font-sans text-xs ml-1.5">
+                    ({isProfit ? '+' : ''}{stats.profitLossPercentage.toFixed(2)}%)
+                  </span>
+                </span>
+              </div>
+
+              <div className="stat-divider pt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-muted mb-1">Total Invested</p>
+                  <p className="font-mono text-sm text-warm">{fmtCurrency(animInvestment)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted mb-1">Unrealised P&amp;L</p>
+                  <p className={`font-mono text-sm ${isProfit ? 'text-emerge' : 'text-crimson'}`}>
+                    {isProfit ? '+' : '-'}{fmtCurrency(animProfitLoss)}
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="py-8 text-center">
+              <p className="text-muted text-sm mb-5">No investments tracked yet.</p>
+              <button
+                onClick={() => navigate('/add')}
+                className="btn-gold px-5 py-2.5 rounded-lg text-sm gap-2"
+              >
+                <Plus size={14} />
+                Add First Purchase
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Gold Rate */}
+      <section className="fade-up fade-up-2">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm text-gray-400">Current Gold Rate</p>
+          <p className="section-label">Gold Rate</p>
           <button
             onClick={fetchGoldRate}
             disabled={rateLoading}
-            className="p-1.5 rounded-lg hover:bg-surface-light transition-colors text-gray-400 hover:text-gold"
+            className="text-faint hover:text-gold transition-colors p-1"
+            title="Refresh rate"
           >
-            <RefreshCw size={16} className={rateLoading ? 'animate-spin' : ''} />
+            <RefreshCw size={13} className={rateLoading ? 'animate-spin' : ''} />
           </button>
         </div>
-
-        {goldRate ? (
-          <>
-            <div className="flex items-end gap-2">
-              <p className="text-3xl font-bold text-gold">
-                {fmtCurrency(goldRate.priceNumeric)}
-              </p>
-              <p className="text-gray-400 text-sm mb-1">/ 10g</p>
-            </div>
-            <p className="text-sm text-gray-400">
-              {fmtCurrency(ratePerGram)} / gram • {goldRate.purity} • {goldRate.location}
-            </p>
-            {priceChange && (
-              <div className={`mt-2 flex items-center gap-1 text-sm ${priceChange.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {priceChange.change >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                <span>
-                  {priceChange.change >= 0 ? '+' : ''}{fmtCurrency(priceChange.change / 10)}
-                  {' '}({priceChange.percent.toFixed(2)}%) today
-                </span>
+        <div className="vault-card p-5 glow-pulse">
+          {goldRate ? (
+            <>
+              <div className="flex items-baseline gap-3 mb-1">
+                <p className="font-mono text-3xl font-light gold-shimmer-text number-reveal">
+                  {fmtCurrency(animRatePerGram)}
+                </p>
+                <span className="text-muted text-sm">/gram</span>
               </div>
-            )}
-            {goldRate.timestamp && (
-              <p className="text-xs text-gray-500 mt-1">
-                Updated: {new Date(goldRate.timestamp).toLocaleString('en-IN')}
-              </p>
-            )}
-          </>
-        ) : rateLoading ? (
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-            <p className="text-gray-400">Fetching rate...</p>
-          </div>
-        ) : (
-          <p className="text-gray-400">Rate unavailable</p>
-        )}
-      </div>
 
-      {/* Quick Stats */}
+              <p className="text-xs text-muted mb-3">
+                <span className="font-mono">{fmtCurrency(goldRate.priceNumeric)}</span>
+                {' '}/10g&nbsp; · &nbsp;{goldRate.purity}&nbsp; · &nbsp;{goldRate.location}
+              </p>
+
+              {priceChange && (
+                <div className={`flex items-center gap-1.5 text-sm ${priceChange.change >= 0 ? 'text-emerge' : 'text-crimson'}`}>
+                  {priceChange.change >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                  <span className="font-mono text-xs">
+                    {priceChange.change >= 0 ? '+' : ''}{fmtCurrency(priceChange.change / 10)}/g
+                    &nbsp;({priceChange.percent.toFixed(2)}%) today
+                  </span>
+                </div>
+              )}
+
+              {goldRate.timestamp && (
+                <p className="text-xs text-faint mt-2">
+                  Updated {new Date(goldRate.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              )}
+            </>
+          ) : rateLoading ? (
+            <div className="flex items-center gap-3 py-2">
+              <div className="w-5 h-5 border border-gold/40 border-t-transparent rounded-full animate-spin" />
+              <p className="text-muted text-sm">Fetching rate…</p>
+            </div>
+          ) : (
+            <p className="text-muted text-sm">Rate unavailable</p>
+          )}
+        </div>
+      </section>
+
+      {/* Holdings */}
       {hasPurchases && (
-        <div className="glass rounded-2xl p-5">
-          <p className="text-sm text-gray-400 mb-3">Quick Stats</p>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-surface-light rounded-xl p-3 text-center">
-              <Scale size={16} className="text-gold mx-auto mb-1" />
-              <p className="text-xs text-gray-400">Total Gold</p>
-              <p className="font-bold text-white text-sm">{fmt(stats.totalWeight, 2)}g</p>
-            </div>
-            <div className="bg-surface-light rounded-xl p-3 text-center">
-              <Coins size={16} className="text-gold mx-auto mb-1" />
-              <p className="text-xs text-gray-400">Avg Buy Price</p>
-              <p className="font-bold text-white text-sm">{fmtCurrency(stats.averagePurchasePrice)}/g</p>
-            </div>
-            <div className="bg-surface-light rounded-xl p-3 text-center">
-              <TrendingUp size={16} className="text-gold mx-auto mb-1" />
-              <p className="text-xs text-gray-400">Market Price</p>
-              <p className="font-bold text-white text-sm">{fmtCurrency(ratePerGram)}/g</p>
+        <section className="fade-up fade-up-3">
+          <p className="section-label mb-3">Holdings</p>
+          <div className="vault-card divide-y divide-gold/[0.06]">
+            <div className="grid grid-cols-3 divide-x divide-gold/[0.06]">
+              <div className="p-4 text-center">
+                <p className="text-xs text-muted mb-1.5">Total Weight</p>
+                <p className="font-mono text-sm text-warm">{fmt(stats.totalWeight, 3)}g</p>
+              </div>
+              <div className="p-4 text-center">
+                <p className="text-xs text-muted mb-1.5">Avg Buy Price</p>
+                <p className="font-mono text-sm text-warm">{fmtCurrency(stats.averagePurchasePrice)}/g</p>
+              </div>
+              <div className="p-4 text-center">
+                <p className="text-xs text-muted mb-1.5">Market Price</p>
+                <p className="font-mono text-sm text-gold">{fmtCurrency(animRatePerGram)}/g</p>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
       )}
 
       {/* Price Chart */}
       {chartData.length > 0 && (
-        <div className="glass rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-gray-400">Gold Price Trend</p>
+        <section className="fade-up fade-up-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="section-label">Price Trend</p>
             <div className="flex gap-1">
               {[7, 30, 90].map(d => (
                 <button
                   key={d}
                   onClick={() => setSelectedDays(d)}
-                  className={`px-2 py-1 text-xs rounded-lg transition-colors ${
-                    selectedDays === d ? 'bg-gold text-black font-semibold' : 'bg-surface-light text-gray-400 hover:text-white'
+                  className={`px-2.5 py-1 text-xs rounded transition-colors font-mono ${
+                    selectedDays === d
+                      ? 'bg-gold/15 text-gold border border-gold/30'
+                      : 'text-faint hover:text-muted border border-transparent'
                   }`}
                 >
                   {d}D
@@ -162,27 +207,54 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={chartData}>
-              <defs>
-                <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FFB300" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#FFB300" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-              <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={v => `₹${v}`} />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#1D1E33', border: '1px solid #FFB30030', borderRadius: 8 }}
-                labelStyle={{ color: '#9ca3af' }}
-                itemStyle={{ color: '#FFB300' }}
-                formatter={(v: any) => [`₹${v}`, 'Price/g']}
-              />
-              <Area type="monotone" dataKey="price" stroke="#FFB300" strokeWidth={2} fill="url(#goldGrad)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+          <div className="vault-card p-5 pt-4">
+            <ResponsiveContainer width="100%" height={160}>
+              <AreaChart data={chartData} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#C29C44" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="#C29C44" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="2 4" stroke="rgba(194,156,68,0.07)" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: '#3D3830', fontSize: 10, fontFamily: 'DM Mono' }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  tick={{ fill: '#3D3830', fontSize: 10, fontFamily: 'DM Mono' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={v => `₹${v}`}
+                  width={52}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#181715',
+                    border: '1px solid rgba(194,156,68,0.15)',
+                    borderRadius: 8,
+                    fontFamily: 'DM Mono',
+                    fontSize: 12,
+                  }}
+                  labelStyle={{ color: '#7A6E62', marginBottom: 4 }}
+                  itemStyle={{ color: '#C29C44' }}
+                  formatter={(v: any) => [`₹${v}`, 'Price/g']}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="price"
+                  stroke="#C29C44"
+                  strokeWidth={1.5}
+                  fill="url(#goldGrad)"
+                  dot={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
       )}
     </div>
   );

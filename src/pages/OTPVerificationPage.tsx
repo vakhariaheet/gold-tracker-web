@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function OTPVerificationPage() {
@@ -89,70 +89,78 @@ export default function OTPVerificationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-background flex items-center justify-center p-5">
+      <div className="w-full max-w-sm">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+          className="flex items-center gap-2 text-muted hover:text-warm mb-8 transition-colors text-sm"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={15} strokeWidth={1.75} />
           Back
         </button>
 
-        <div className="glass rounded-2xl p-6">
-          <div className="w-12 h-12 gold-gradient rounded-xl flex items-center justify-center mb-4">
-            <ShieldCheck size={20} className="text-black" />
+        <div className="mb-8">
+          <div className="w-10 h-10 bg-gold/10 border border-gold/25 flex items-center justify-center mb-5">
+            <span className="font-mono text-gold text-base font-medium">6</span>
           </div>
-          <h2 className="text-xl font-bold text-white mb-1">Verify OTP</h2>
-          <p className="text-gray-400 text-sm mb-2">
-            Enter the 6-digit code sent to <span className="text-gold">{email}</span>
+          <h1 className="font-display text-3xl font-medium text-warm mb-1">Enter Code</h1>
+          <p className="text-muted text-sm">
+            A 6-digit code was sent to{' '}
+            <span className="text-gold font-mono text-xs">{email}</span>
           </p>
-          <p className="text-sm mb-6">
-            <span className={timeLeft < 60 ? 'text-red-400' : 'text-gray-400'}>
-              Expires in {formatTime(timeLeft)}
-            </span>
-          </p>
-
-          <div className="flex gap-2 justify-between mb-6">
-            {otp.map((digit, idx) => (
-              <input
-                key={idx}
-                ref={el => { inputRefs.current[idx] = el; }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={e => handleChange(idx, e.target.value)}
-                onKeyDown={e => handleKeyDown(idx, e)}
-                className="w-12 h-12 text-center text-xl font-bold bg-surface-light border border-white/10 rounded-xl text-white focus:outline-none focus:border-gold transition-colors"
-              />
-            ))}
-          </div>
-
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm mb-4">
-              {error}
-            </div>
-          )}
-
-          <button
-            onClick={() => handleVerify()}
-            disabled={isLoading || otp.some(d => !d)}
-            className="w-full gold-gradient text-black font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 mb-4"
-          >
-            {isLoading ? 'Verifying...' : 'Verify OTP'}
-          </button>
-
-          <button
-            onClick={handleResend}
-            disabled={resendCooldown > 0}
-            className="w-full text-sm text-gray-400 hover:text-gold disabled:opacity-50 transition-colors"
-          >
-            {resendCooldown > 0
-              ? `Resend OTP in ${resendCooldown}s`
-              : 'Resend OTP'}
-          </button>
         </div>
+
+        {/* OTP Inputs */}
+        <div className="flex gap-2 mb-3">
+          {otp.map((digit, idx) => (
+            <input
+              key={idx}
+              ref={el => { inputRefs.current[idx] = el; }}
+              type="text"
+              inputMode="numeric"
+              maxLength={1}
+              value={digit}
+              onChange={e => handleChange(idx, e.target.value)}
+              onKeyDown={e => handleKeyDown(idx, e)}
+              className={`flex-1 h-12 text-center font-mono text-xl font-medium bg-s2 border rounded-lg text-warm transition-colors focus:outline-none ${
+                digit
+                  ? 'border-gold/40 bg-gold/[0.06]'
+                  : 'border-gold/[0.1] focus:border-gold/40'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Timer */}
+        <p className={`text-xs font-mono mb-5 ${timeLeft < 60 ? 'text-crimson-light' : 'text-muted'}`}>
+          Expires in {formatTime(timeLeft)}
+        </p>
+
+        {error && (
+          <div className="bg-crimson-bg border border-crimson/20 rounded-lg px-4 py-3 text-crimson-light text-sm mb-4">
+            {error}
+          </div>
+        )}
+
+        <button
+          onClick={() => handleVerify()}
+          disabled={isLoading || otp.some(d => !d)}
+          className="btn-gold w-full py-3 rounded-lg text-sm mb-4"
+        >
+          {isLoading ? 'Verifying…' : 'Verify Code'}
+        </button>
+
+        <button
+          onClick={handleResend}
+          disabled={resendCooldown > 0}
+          className="w-full text-sm text-muted hover:text-warm disabled:opacity-40 transition-colors text-center"
+        >
+          {resendCooldown > 0 ? (
+            <span className="font-mono">Resend in {resendCooldown}s</span>
+          ) : (
+            'Resend code'
+          )}
+        </button>
       </div>
     </div>
   );

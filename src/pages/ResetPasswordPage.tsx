@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function ResetPasswordPage() {
@@ -21,6 +21,12 @@ export default function ResetPasswordPage() {
 
   const strength = password.length >= 8 ? 'strong' : password.length >= 6 ? 'medium' : 'weak';
 
+  const strengthColors: Record<string, string> = {
+    strong: 'bg-emerge',
+    medium: 'bg-gold',
+    weak: 'bg-crimson',
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirm) { setError('Passwords do not match'); return; }
@@ -38,90 +44,92 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-background flex items-center justify-center p-5">
+      <div className="w-full max-w-sm">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+          className="flex items-center gap-2 text-muted hover:text-warm mb-8 transition-colors text-sm"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={15} strokeWidth={1.75} />
           Back
         </button>
 
-        <div className="glass rounded-2xl p-6">
-          <div className="w-12 h-12 gold-gradient rounded-xl flex items-center justify-center mb-4">
-            <Lock size={20} className="text-black" />
+        <div className="mb-8">
+          <div className="w-10 h-10 bg-gold/10 border border-gold/25 flex items-center justify-center mb-5">
+            <span className="font-display text-gold text-lg font-medium">⌖</span>
           </div>
-          <h2 className="text-xl font-bold text-white mb-1">Reset Password</h2>
-          <p className="text-gray-400 text-sm mb-6">Create your new password below.</p>
+          <h1 className="font-display text-3xl font-medium text-warm mb-1">New Password</h1>
+          <p className="text-muted text-sm">Create a strong password for your account.</p>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="text-sm text-gray-400 mb-1 block">New Password</label>
-              <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-surface-light border border-white/10 rounded-xl pl-10 pr-10 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-gold/50 transition-colors"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {password && (
-                <div className="mt-2 flex gap-1">
-                  {['weak', 'medium', 'strong'].map(s => (
-                    <div
-                      key={s}
-                      className={`h-1 flex-1 rounded-full transition-colors ${
-                        strength === 'strong' ? 'bg-green-500' :
-                        strength === 'medium' && s !== 'strong' ? 'bg-gold' :
-                        s === 'weak' ? 'bg-red-500' : 'bg-surface-light'
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs text-muted block mb-1.5 uppercase tracking-wider">New Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="vault-input pr-11"
+                required
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-faint hover:text-muted transition-colors"
+              >
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
             </div>
 
-            <div>
-              <label className="text-sm text-gray-400 mb-1 block">Confirm Password</label>
-              <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={confirm}
-                  onChange={e => setConfirm(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-surface-light border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-gold/50 transition-colors"
-                  required
-                />
-              </div>
-            </div>
-
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">
-                {error}
+            {/* Strength indicator */}
+            {password && (
+              <div className="mt-2 flex gap-1.5">
+                {['weak', 'medium', 'strong'].map((s, i) => (
+                  <div
+                    key={s}
+                    className={`h-0.5 flex-1 rounded-full transition-colors ${
+                      (strength === 'strong') ||
+                      (strength === 'medium' && i < 2) ||
+                      (strength === 'weak' && i === 0)
+                        ? strengthColors[strength]
+                        : 'bg-faint'
+                    }`}
+                  />
+                ))}
+                <span className="text-[10px] text-muted ml-1 capitalize">{strength}</span>
               </div>
             )}
+          </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full gold-gradient text-black font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {isLoading ? 'Resetting...' : 'Reset Password'}
-            </button>
-          </form>
-        </div>
+          <div>
+            <label className="text-xs text-muted block mb-1.5 uppercase tracking-wider">Confirm Password</label>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={confirm}
+              onChange={e => setConfirm(e.target.value)}
+              placeholder="••••••••"
+              className="vault-input"
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="bg-crimson-bg border border-crimson/20 rounded-lg px-4 py-3 text-crimson-light text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="btn-gold w-full py-3 rounded-lg text-sm"
+          >
+            {isLoading ? 'Resetting…' : 'Reset Password'}
+          </button>
+        </form>
       </div>
     </div>
   );

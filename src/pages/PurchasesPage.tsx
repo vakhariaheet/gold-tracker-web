@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCw, SlidersHorizontal, TrendingUp, TrendingDown, Edit2, Trash2, Plus } from 'lucide-react';
+import { RefreshCw, TrendingUp, TrendingDown, Edit2, Trash2, Plus, ChevronDown } from 'lucide-react';
 import { usePurchases } from '../context/PurchasesContext';
 import { useGoldRate } from '../context/GoldRateContext';
 import type { GoldPurchase, SortOption } from '../types';
@@ -26,61 +26,70 @@ function PurchaseCard({ purchase, ratePerGram, onEdit, onDelete, getPurityFactor
   const isProfit = profitLoss >= 0;
 
   return (
-    <div className="glass rounded-xl p-4">
-      <div className="flex items-start justify-between mb-3">
+    <div className="vault-card overflow-hidden">
+      {/* Top row */}
+      <div className="flex items-start justify-between p-4 pb-3">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="bg-gold/20 text-gold text-xs font-semibold px-2 py-0.5 rounded-full">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-mono bg-gold/10 text-gold border border-gold/20 px-2 py-0.5 rounded">
               {purchase.purity}
             </span>
-            <span className="text-white font-semibold">{fmt(purchase.weight, 3)}g</span>
+            <span className="font-mono text-sm text-warm font-medium">{fmt(purchase.weight, 3)} g</span>
           </div>
-          <p className="text-xs text-gray-400 mt-1">
-            {new Date(purchase.purchaseDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+          <p className="text-xs text-muted">
+            {new Date(purchase.purchaseDate).toLocaleDateString('en-IN', {
+              day: 'numeric', month: 'short', year: 'numeric'
+            })}
           </p>
         </div>
-        <div className={`text-right px-2 py-1 rounded-lg ${isProfit ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-          <div className={`flex items-center gap-1 text-sm font-semibold ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
-            {isProfit ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-            <span>{isProfit ? '+' : ''}{returnsPct.toFixed(1)}%</span>
+        <div className={`text-right px-2.5 py-1.5 rounded-md ${isProfit ? 'bg-emerge-bg/40 border border-emerge/20' : 'bg-crimson-bg/40 border border-crimson/20'}`}>
+          <div className={`flex items-center gap-1 text-xs font-mono font-medium ${isProfit ? 'text-emerge-light' : 'text-crimson-light'}`}>
+            {isProfit ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+            <span>{isProfit ? '+' : ''}{returnsPct.toFixed(2)}%</span>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-center mb-3">
-        <div className="bg-surface-light rounded-lg py-2 px-1">
-          <p className="text-xs text-gray-500">Bought</p>
-          <p className="text-xs font-semibold text-white">₹{fmt(purchase.purchasePricePerGram)}/g</p>
+      {/* Stats row */}
+      <div className="grid grid-cols-3 divide-x divide-gold/[0.06] border-t border-gold/[0.06]">
+        <div className="px-3 py-3">
+          <p className="text-[10px] text-muted mb-1 uppercase tracking-wider">Bought</p>
+          <p className="font-mono text-xs text-warm">₹{fmt(purchase.purchasePricePerGram)}/g</p>
         </div>
-        <div className="bg-surface-light rounded-lg py-2 px-1">
-          <p className="text-xs text-gray-500">Invested</p>
-          <p className="text-xs font-semibold text-white">₹{fmt(purchaseValue)}</p>
+        <div className="px-3 py-3">
+          <p className="text-[10px] text-muted mb-1 uppercase tracking-wider">Invested</p>
+          <p className="font-mono text-xs text-warm">₹{fmt(purchaseValue)}</p>
         </div>
-        <div className={`rounded-lg py-2 px-1 ${isProfit ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-          <p className="text-xs text-gray-500">P&L</p>
-          <p className={`text-xs font-semibold ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
+        <div className="px-3 py-3">
+          <p className="text-[10px] text-muted mb-1 uppercase tracking-wider">P&L</p>
+          <p className={`font-mono text-xs font-medium ${isProfit ? 'text-emerge-light' : 'text-crimson-light'}`}>
             {isProfit ? '+' : ''}₹{fmt(Math.abs(profitLoss))}
           </p>
         </div>
       </div>
 
+      {/* Notes */}
       {purchase.notes && (
-        <p className="text-xs text-gray-400 italic mb-3">{purchase.notes}</p>
+        <div className="px-4 py-2 border-t border-gold/[0.06]">
+          <p className="text-xs text-muted italic">{purchase.notes}</p>
+        </div>
       )}
 
-      <div className="flex gap-2 pt-2 border-t border-white/5">
+      {/* Actions */}
+      <div className="flex border-t border-gold/[0.06]">
         <button
           onClick={onEdit}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-surface-light rounded-lg text-sm text-gray-300 hover:text-white hover:bg-gold/10 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-muted hover:text-gold hover:bg-gold/[0.04] transition-colors"
         >
-          <Edit2 size={14} />
+          <Edit2 size={12} />
           Edit
         </button>
+        <div className="w-px bg-gold/[0.06]" />
         <button
           onClick={onDelete}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-surface-light rounded-lg text-sm text-gray-300 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs text-muted hover:text-crimson hover:bg-crimson/[0.04] transition-colors"
         >
-          <Trash2 size={14} />
+          <Trash2 size={12} />
           Delete
         </button>
       </div>
@@ -108,62 +117,72 @@ export default function PurchasesPage() {
   };
 
   return (
-    <div className="sm:pl-52 space-y-4">
+    <div className="space-y-5">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">Purchases</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowSort(!showSort)}
-            className="p-2 rounded-xl glass hover:bg-surface-light transition-colors text-gray-400 hover:text-gold relative"
-          >
-            <SlidersHorizontal size={18} />
-          </button>
+        <p className="section-label">Purchases</p>
+        <div className="flex items-center gap-2">
           <button
             onClick={syncFromServer}
             disabled={isSyncing}
-            className="p-2 rounded-xl glass hover:bg-surface-light transition-colors text-gray-400 hover:text-gold"
+            className="text-faint hover:text-gold transition-colors p-1.5"
             title="Sync from server"
           >
-            <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} />
+            <RefreshCw size={13} className={isSyncing ? 'animate-spin' : ''} />
+          </button>
+          <button
+            onClick={() => navigate('/add')}
+            className="btn-gold px-3 py-1.5 rounded-lg text-xs gap-1.5"
+          >
+            <Plus size={12} />
+            Add
           </button>
         </div>
       </div>
 
-      {/* Sort dropdown */}
-      {showSort && (
-        <div className="glass rounded-xl p-2 space-y-1">
-          {(Object.keys(SORT_LABELS) as SortOption[]).map(opt => (
-            <button
-              key={opt}
-              onClick={() => { setSortOption(opt); setShowSort(false); }}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                sortOption === opt ? 'bg-gold/20 text-gold' : 'text-gray-300 hover:bg-surface-light'
-              }`}
-            >
-              {SORT_LABELS[opt]}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Sort + count */}
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted">
+          {purchases.length} purchase{purchases.length !== 1 ? 's' : ''}
+        </p>
+        <div className="relative">
+          <button
+            onClick={() => setShowSort(!showSort)}
+            className="flex items-center gap-1.5 text-xs text-muted hover:text-warm transition-colors"
+          >
+            {SORT_LABELS[sortOption]}
+            <ChevronDown size={12} className={`transition-transform ${showSort ? 'rotate-180' : ''}`} />
+          </button>
 
-      <div className="flex items-center justify-between text-sm text-gray-400">
-        <span>{purchases.length} purchase{purchases.length !== 1 ? 's' : ''} • sorted by {SORT_LABELS[sortOption].toLowerCase()}</span>
-        <button
-          onClick={() => navigate('/add')}
-          className="flex items-center gap-1.5 text-gold hover:text-gold-light transition-colors"
-        >
-          <Plus size={16} />
-          Add
-        </button>
+          {showSort && (
+            <div className="absolute right-0 top-7 z-20 vault-card min-w-[148px] overflow-hidden shadow-lg shadow-black/40">
+              {(Object.keys(SORT_LABELS) as SortOption[]).map(opt => (
+                <button
+                  key={opt}
+                  onClick={() => { setSortOption(opt); setShowSort(false); }}
+                  className={`w-full text-left px-4 py-2.5 text-xs transition-colors ${
+                    sortOption === opt
+                      ? 'text-gold bg-gold/8'
+                      : 'text-muted hover:text-warm hover:bg-gold/[0.04]'
+                  }`}
+                >
+                  {SORT_LABELS[opt]}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* List */}
       {purchases.length === 0 ? (
-        <div className="glass rounded-2xl p-10 text-center">
-          <p className="text-gray-400 mb-4">No purchases yet.</p>
+        <div className="vault-card p-10 text-center">
+          <p className="text-muted text-sm mb-5">No purchases recorded yet.</p>
           <button
             onClick={() => navigate('/add')}
-            className="gold-gradient text-black font-semibold px-6 py-2.5 rounded-xl hover:opacity-90 transition-opacity"
+            className="btn-gold px-6 py-2.5 rounded-lg text-sm gap-2"
           >
+            <Plus size={14} />
             Add First Purchase
           </button>
         </div>
@@ -182,22 +201,22 @@ export default function PurchasesPage() {
         </div>
       )}
 
-      {/* Delete confirm modal */}
+      {/* Delete modal */}
       {deleteConfirm !== null && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-          <div className="glass rounded-2xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-bold text-white mb-2">Delete Purchase?</h3>
-            <p className="text-gray-400 text-sm mb-6">This action cannot be undone.</p>
+        <div className="fixed inset-0 bg-black/75 flex items-end sm:items-center justify-center p-4 z-50">
+          <div className="vault-card w-full max-w-sm p-6 shadow-xl shadow-black/50">
+            <h3 className="font-display text-xl font-medium text-warm mb-1">Delete Purchase?</h3>
+            <p className="text-muted text-sm mb-6">This action cannot be undone.</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="flex-1 py-2.5 bg-surface-light rounded-xl text-gray-300 hover:text-white transition-colors"
+                className="btn-ghost flex-1 py-2.5 rounded-lg text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(deleteConfirm)}
-                className="flex-1 py-2.5 bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 hover:text-red-300 transition-colors"
+                className="flex-1 py-2.5 rounded-lg text-sm font-medium text-crimson-light bg-crimson-bg border border-crimson/20 hover:bg-crimson/15 transition-colors"
               >
                 Delete
               </button>

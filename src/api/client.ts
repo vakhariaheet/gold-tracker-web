@@ -76,11 +76,8 @@ class ApiClient {
             return this.client(originalRequest);
           } catch(err) {
             console.error('Token refresh failed:', err);
-            // localStorage.removeItem('accessToken');
-            // localStorage.removeItem('refreshToken');
-            // if (window.location.pathname !== '/login') {
-            //   window.location.assign('/login');
-            // }
+            localStorage.clear();
+            window.dispatchEvent(new CustomEvent('auth:session-expired'));
           }
         }
         return Promise.reject(error);

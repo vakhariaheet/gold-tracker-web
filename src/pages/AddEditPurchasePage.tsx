@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Info } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { usePurchases } from '../context/PurchasesContext';
 import type { Purity } from '../types';
 import { useGoldRate } from '../context/GoldRateContext';
 
-const PURITIES: Purity[] = ['24k', '22k', '18k'];
+const PURITIES: { value: Purity; label: string; factor: string }[] = [
+  { value: '24k', label: '24K', factor: '99.9%' },
+  { value: '22k', label: '22K', factor: '91.6%' },
+  { value: '18k', label: '18K', factor: '75.0%' },
+];
 
 function fmt(n: number, d = 0) {
   return new Intl.NumberFormat('en-IN', { maximumFractionDigits: d }).format(n);
@@ -35,16 +39,13 @@ export default function AddEditPurchasePage() {
   const weightNum = parseFloat(weight) || 0;
   const totalPriceNum = parseFloat(totalPrice) || 0;
   const pricePerGram = weightNum > 0 ? totalPriceNum / weightNum : 0;
-
-  const currentValue = ratePerGram > 0
-    ? weightNum * ratePerGram * getPurityFactor(purity)
-    : 0;
+  const currentValue = ratePerGram > 0 ? weightNum * ratePerGram * getPurityFactor(purity) : 0;
+  const hasSummary = weightNum > 0 && pricePerGram > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (weightNum <= 0) { setError('Weight must be greater than 0'); return; }
     if (totalPriceNum <= 0) { setError('Total price must be greater than 0'); return; }
-
     setError('');
     setIsLoading(true);
     try {
@@ -55,7 +56,6 @@ export default function AddEditPurchasePage() {
         purity,
         notes: notes.trim() || undefined,
       };
-
       if (isEdit && existing) {
         await updatePurchase(existing.id, data);
       } else {
@@ -70,154 +70,158 @@ export default function AddEditPurchasePage() {
   };
 
   return (
-    <div className="sm:pl-52">
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-white transition-colors">
-          <ArrowLeft size={20} />
+    <div>
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-7">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-muted hover:text-warm transition-colors p-1 -ml-1"
+        >
+          <ArrowLeft size={18} strokeWidth={1.75} />
         </button>
-        <h1 className="text-xl font-bold text-white">
-          {isEdit ? 'Edit Purchase' : 'Add Purchase'}
+        <h1 className="font-display text-2xl font-medium text-warm">
+          {isEdit ? 'Edit Purchase' : 'New Purchase'}
         </h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+
         {/* Weight */}
-        <div className="glass rounded-xl p-4">
-          <label className="text-sm text-gray-400 mb-1 block">Weight (grams)</label>
+        <div>
+          <label className="text-xs text-muted block mb-1.5 uppercase tracking-wider">Weight (grams)</label>
           <input
             type="number"
             value={weight}
             onChange={e => setWeight(e.target.value)}
-            placeholder="e.g. 10"
+            placeholder="e.g. 10.000"
             step="0.001"
             min="0"
-            className="w-full bg-surface-light border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-gold/50 transition-colors"
+            className="vault-input font-mono"
             required
           />
         </div>
 
-        {/* Total Purchase Price */}
-        <div className="glass rounded-xl p-4">
-          <label className="text-sm text-gray-400 mb-1 block">Total Purchase Price (₹)</label>
+        {/* Total Price */}
+        <div>
+          <label className="text-xs text-muted block mb-1.5 uppercase tracking-wider">Total Purchase Price (₹)</label>
           <input
             type="number"
             value={totalPrice}
             onChange={e => setTotalPrice(e.target.value)}
-            placeholder="e.g. 60000"
+            placeholder="e.g. 94000"
             step="0.01"
             min="0"
-            className="w-full bg-surface-light border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-gold/50 transition-colors"
+            className="vault-input font-mono"
             required
           />
           {pricePerGram > 0 && (
-            <p className="text-xs text-gold mt-2">≈ ₹{fmt(pricePerGram, 2)} per gram</p>
+            <p className="text-xs text-gold mt-1.5 font-mono">≈ ₹{fmt(pricePerGram, 2)} per gram</p>
           )}
         </div>
 
-        {/* Purchase Date */}
-        <div className="glass rounded-xl p-4">
-          <label className="text-sm text-gray-400 mb-1 block">Purchase Date</label>
+        {/* Date */}
+        <div>
+          <label className="text-xs text-muted block mb-1.5 uppercase tracking-wider">Purchase Date</label>
           <input
             type="date"
             value={purchaseDate}
             onChange={e => setPurchaseDate(e.target.value)}
             max={new Date().toISOString().split('T')[0]}
-            className="w-full bg-surface-light border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-gold/50 transition-colors [color-scheme:dark]"
+            className="vault-input [color-scheme:dark]"
             required
           />
         </div>
 
         {/* Purity */}
-        <div className="glass rounded-xl p-4">
-          <label className="text-sm text-gray-400 mb-2 block">Gold Purity</label>
-          <div className="flex gap-2">
+        <div>
+          <label className="text-xs text-muted block mb-2 uppercase tracking-wider">Gold Purity</label>
+          <div className="grid grid-cols-3 gap-2">
             {PURITIES.map(p => (
               <button
-                key={p}
+                key={p.value}
                 type="button"
-                onClick={() => setPurity(p)}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                  purity === p
-                    ? 'gold-gradient text-black'
-                    : 'bg-surface-light text-gray-300 hover:text-white'
+                onClick={() => setPurity(p.value)}
+                className={`py-3 rounded-lg text-sm transition-colors border ${
+                  purity === p.value
+                    ? 'bg-gold/15 border-gold/40 text-gold font-medium'
+                    : 'bg-s2 border-gold/[0.08] text-muted hover:text-warm hover:border-gold/20'
                 }`}
               >
-                {p}
+                <span className="font-mono font-medium block">{p.label}</span>
+                <span className="text-[10px] mt-0.5 block opacity-60">{p.factor}</span>
               </button>
             ))}
           </div>
         </div>
 
         {/* Notes */}
-        <div className="glass rounded-xl p-4">
-          <label className="text-sm text-gray-400 mb-1 block">Notes (optional)</label>
+        <div>
+          <label className="text-xs text-muted block mb-1.5 uppercase tracking-wider">Notes (optional)</label>
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            placeholder="e.g. Bought for wedding, store name..."
+            placeholder="e.g. Bought for wedding, store name…"
             rows={3}
-            className="w-full bg-surface-light border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-gold/50 transition-colors resize-none"
+            className="vault-input resize-none"
           />
         </div>
 
-        {/* Summary card */}
-        {weightNum > 0 && pricePerGram > 0 && (
-          <div className="bg-gold/10 border border-gold/20 rounded-xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Info size={14} className="text-gold" />
-              <p className="text-sm text-gold font-semibold">Purchase Summary</p>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
+        {/* Summary */}
+        {hasSummary && (
+          <div className="bg-gold/[0.05] border border-gold/[0.12] rounded-lg p-4">
+            <p className="text-xs text-gold uppercase tracking-wider mb-3">Summary</p>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3">
               <div>
-                <p className="text-gray-400 text-xs">Weight</p>
-                <p className="text-white font-medium">{fmt(weightNum, 3)}g</p>
+                <p className="text-[10px] text-muted uppercase tracking-wider mb-0.5">Weight</p>
+                <p className="font-mono text-sm text-warm">{fmt(weightNum, 3)}g</p>
               </div>
               <div>
-                <p className="text-gray-400 text-xs">Price / gram</p>
-                <p className="text-white font-medium">₹{fmt(pricePerGram, 2)}</p>
+                <p className="text-[10px] text-muted uppercase tracking-wider mb-0.5">Price / gram</p>
+                <p className="font-mono text-sm text-warm">₹{fmt(pricePerGram, 2)}</p>
               </div>
               <div>
-                <p className="text-gray-400 text-xs">Total Invested</p>
-                <p className="text-white font-medium">₹{fmt(totalPriceNum)}</p>
+                <p className="text-[10px] text-muted uppercase tracking-wider mb-0.5">Total Invested</p>
+                <p className="font-mono text-sm text-warm">₹{fmt(totalPriceNum)}</p>
               </div>
               {currentValue > 0 && (
                 <div>
-                  <p className="text-gray-400 text-xs">Current Value</p>
-                  <p className={`font-medium ${currentValue >= totalPriceNum ? 'text-green-400' : 'text-red-400'}`}>
+                  <p className="text-[10px] text-muted uppercase tracking-wider mb-0.5">Current Value</p>
+                  <p className={`font-mono text-sm font-medium ${currentValue >= totalPriceNum ? 'text-emerge-light' : 'text-crimson-light'}`}>
                     ₹{fmt(currentValue)}
                   </p>
                 </div>
               )}
             </div>
             {ratePerGram > 0 && (
-              <p className="text-xs text-gray-400 mt-3 flex items-start gap-1">
-                <Info size={11} className="mt-0.5 shrink-0" />
+              <p className="text-[10px] text-muted mt-3 border-t border-gold/[0.08] pt-3">
                 Current value = weight × market rate × purity factor ({getPurityFactor(purity)})
               </p>
             )}
           </div>
         )}
 
+        {/* Error */}
         {error && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">
+          <div className="bg-crimson-bg border border-crimson/20 rounded-lg px-4 py-3 text-crimson-light text-sm">
             {error}
           </div>
         )}
 
-        <div className="flex gap-3 pb-4">
+        {/* Actions */}
+        <div className="flex gap-3 pt-1 pb-2">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex-1 py-3 bg-surface-light rounded-xl text-gray-300 hover:text-white transition-colors"
+            className="btn-ghost flex-1 py-3 rounded-lg text-sm"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isLoading}
-            className="flex-1 py-3 gold-gradient text-black font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="btn-gold flex-1 py-3 rounded-lg text-sm"
           >
-            {isLoading ? 'Saving...' : isEdit ? 'Update' : 'Add Purchase'}
+            {isLoading ? 'Saving…' : isEdit ? 'Update Purchase' : 'Add Purchase'}
           </button>
         </div>
       </form>

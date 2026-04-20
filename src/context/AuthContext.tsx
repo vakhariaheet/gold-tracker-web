@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { apiClient } from '../api/client';
 import type { User } from '../types';
 
@@ -7,6 +7,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   isLoading: boolean;
   error: string | null;
+  sessionExpired: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -16,6 +17,7 @@ interface AuthContextType {
   updateProfile: (name: string, email: string) => Promise<void>;
   deleteAccount: () => Promise<void>;
   clearError: () => void;
+  clearSessionExpired: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -24,6 +26,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const logoutRef = useRef<() => Promise<void>>(null);
 
   const normalizeToken = (value: unknown): string | null => {
     if (typeof value !== 'string') return null;
@@ -102,10 +106,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
+    localStorage.clear();
     setUser(null);
+  }, []);
+
+  logoutRef.current = logout;
+
+  useEffect(() => {
+    const handler = () => {
+      logoutRef.current?.();
+      setSessionExpired(true);
+    };
+    window.addEventListener('auth:session-expired', handler);
+    return () => window.removeEventListener('auth:session-expired', handler);
   }, []);
 
   const forgotPassword = useCallback(async (email: string) => {
@@ -169,6 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [logout]);
 
   const clearError = useCallback(() => setError(null), []);
+  const clearSessionExpired = useCallback(() => setSessionExpired(false), []);
 
   return (
     <AuthContext.Provider value={{
@@ -176,6 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoggedIn: !!user,
       isLoading,
       error,
+      sessionExpired,
       login,
       register,
       logout,
@@ -185,6 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       updateProfile,
       deleteAccount,
       clearError,
+      clearSessionExpired,
     }}>
       {children}
     </AuthContext.Provider>
